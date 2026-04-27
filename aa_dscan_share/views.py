@@ -6,7 +6,13 @@ from django.urls import reverse
 from aa_core_hub.api import create_dscan, get_dscan_by_public_id
 
 from .forms import DetectedStructureForm, DScanSubmitForm
-from .services import annotate_dscan_items, get_detected_structure_rows, save_detected_structures
+from .services import (
+    annotate_dscan_items,
+    get_detected_structure_rows,
+    get_fleet_composition,
+    get_system_timeline,
+    save_detected_structures,
+)
 
 
 @login_required
@@ -96,7 +102,24 @@ def view_dscan(request, public_id):
         "aa_dscan_share/view.html",
         {
             "dscan": dscan,
+            "fleet_composition": get_fleet_composition(dscan),
             "rows": annotate_dscan_items(dscan),
             "share_url": share_url,
+        },
+    )
+
+
+@login_required
+@permission_required("aa_core_hub.view_dscan", raise_exception=True)
+def system_timeline(request, solar_system_id):
+    timeline = get_system_timeline(solar_system_id=solar_system_id)
+    system_name = timeline[0]["dscan"].solar_system_name if timeline else ""
+    return render(
+        request,
+        "aa_dscan_share/timeline.html",
+        {
+            "solar_system_id": solar_system_id,
+            "system_name": system_name,
+            "timeline": timeline,
         },
     )

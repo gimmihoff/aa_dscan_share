@@ -1,4 +1,10 @@
-from aa_core_hub.api import DScanItem, Structure, create_or_update_structure, parse_dscan
+from aa_core_hub.api import (
+    DScanItem,
+    Structure,
+    create_or_update_structure,
+    get_dscan_timeline_for_system,
+    parse_dscan,
+)
 
 STRUCTURE_CATEGORIES = {
     "STRUCTURE",
@@ -43,6 +49,46 @@ def annotate_dscan_items(dscan):
             }
         )
     return rows
+
+
+def is_fleet_item(item: DScanItem) -> bool:
+    return not is_structure_item(item) and item.category not in {"PROBE", "DEPLOYABLE"}
+
+
+def get_fleet_composition(dscan):
+    composition = {}
+    for item in dscan.items.all():
+        if not is_fleet_item(item):
+            continue
+        type_name = item.type_name or "Unknown"
+        if type_name not in composition:
+            composition[type_name] = {
+                "type_name": type_name,
+                "category": item.category,
+                "count": 0,
+                "names": [],
+            }
+        composition[type_name]["count"] += 1
+        composition[type_name]["names"].append(item.name)
+    return sorted(
+        composition.values(),
+        key=lambda row: (-row["count"], row["type_name"].lower()),
+    )
+
+
+def get_system_timeline(*, solar_system_id: int, limit: int = 50):
+    timeline = []
+    for dscan in get_dscan_timeline_for_system(solar_system_id=solar_system_id, limit=limit):
+        composition = get_fleet_composition(dscan)
+        timeline.append(
+            {
+                "dscan": dscan,
+                "composition": composition,
+                "ship_count": sum(row["count"] for row in composition),
+                "type_count": len(composition),
+            }
+        )
+    return timeline
 
 
 def get_detected_structure_rows(*, raw_text: str, solar_system_id: int):
