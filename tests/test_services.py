@@ -43,9 +43,17 @@ class DScanShareServiceTests(TestCase):
             solar_system_name="Jita",
         )
 
-        saved = save_detected_structures(dscan=dscan, standing="HOSTILE")
+        saved = save_detected_structures(
+            dscan=dscan,
+            structures=[
+                {
+                    "name": "Astrahus",
+                    "type_name": "Upwell Structure",
+                    "standing": "HOSTILE",
+                }
+            ],
+        )
 
         self.assertEqual(len(saved), 1)
         self.assertEqual(saved[0].standing, "HOSTILE")
         self.assertEqual(saved[0].solar_system_id, 30000142)
-

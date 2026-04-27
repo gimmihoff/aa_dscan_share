@@ -16,16 +16,33 @@
       <div class="col-md-4">
         <div class="mb-3">{{ form.solar_system_id.label_tag }} {{ form.solar_system_id }} {{ form.solar_system_id.errors }}</div>
         <div class="mb-3">{{ form.solar_system_name.label_tag }} {{ form.solar_system_name }} {{ form.solar_system_name.errors }}</div>
-        <hr>
-        <div class="form-check mb-3">{{ form.save_detected_structures }} {{ form.save_detected_structures.label_tag }}</div>
-        <div class="mb-3">{{ form.structure_standing.label_tag }} {{ form.structure_standing }}</div>
-        <div class="mb-3">{{ form.owner_alliance_id.label_tag }} {{ form.owner_alliance_id }}</div>
-        <div class="mb-3">{{ form.owner_corporation_id.label_tag }} {{ form.owner_corporation_id }}</div>
-        <div class="mb-3">{{ form.notes.label_tag }} {{ form.notes }}</div>
-        <button class="btn btn-primary" type="submit">Submit and Share</button>
+        <button class="btn btn-outline-primary" name="action" value="preview" type="submit">Preview Structures</button>
+        <button class="btn btn-primary" name="action" value="submit" type="submit">Submit and Share</button>
       </div>
     </div>
+    {% if structure_forms %}
+    <h4 class="mt-4">Detected Structures</h4>
+    <table class="table table-sm table-striped">
+      <thead><tr><th>Save</th><th>Name</th><th>Type</th><th>Distance</th><th>Known</th><th>Standing</th><th>Alliance</th><th>Corporation</th><th>Notes</th></tr></thead>
+      <tbody>
+        {% for row, structure_form in structure_form_rows %}
+        <tr>
+          <td>{{ structure_form.save }}</td>
+          <td>{{ structure_form.name.value }}{{ structure_form.name }}</td>
+          <td>{{ structure_form.type_name.value }}{{ structure_form.type_name }}{{ structure_form.category }}</td>
+          <td>{{ structure_form.distance.value }}{{ structure_form.distance }}</td>
+          <td>{% if row.known_structure %}{{ row.known_structure.standing }}{% else %}New{% endif %}</td>
+          <td>{{ structure_form.standing }}</td>
+          <td>{{ structure_form.owner_alliance_id }}</td>
+          <td>{{ structure_form.owner_corporation_id }}</td>
+          <td>{{ structure_form.notes }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% elif detected_rows %}
+    <p class="mt-4">No saveable structures were detected.</p>
+    {% endif %}
   </form>
 </div>
 {% endblock %}
-
