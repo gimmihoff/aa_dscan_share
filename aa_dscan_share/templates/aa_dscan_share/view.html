@@ -1,0 +1,43 @@
+{% extends "allianceauth/base.html" %}
+{% block page_title %}Shared D-Scan{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <h3>Shared D-Scan</h3>
+  <div class="mb-3">
+    <label for="share-url" class="form-label">Share link</label>
+    <input id="share-url" class="form-control" type="text" value="{{ share_url }}" readonly>
+  </div>
+  <div class="row mb-3">
+    <div class="col-md-3"><strong>System</strong><br>{{ dscan.solar_system_name }} {{ dscan.solar_system_id }}</div>
+    <div class="col-md-3"><strong>Source</strong><br>{{ dscan.source }}</div>
+    <div class="col-md-3"><strong>Scanned</strong><br>{{ dscan.scanned_at }}</div>
+    <div class="col-md-3"><strong>Submitted</strong><br>{{ dscan.created_at }}</div>
+  </div>
+  <table class="table table-sm table-striped">
+    <thead>
+      <tr><th>Name</th><th>Type</th><th>Distance</th><th>Category</th><th>Core Match</th><th>Standing</th><th>Owner</th></tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td>{{ row.item.name }}</td>
+        <td>{{ row.item.type_name }}</td>
+        <td>{{ row.item.distance }}</td>
+        <td>{{ row.item.category }}</td>
+        <td>{% if row.known_structure %}{{ row.known_structure.name }}{% elif row.is_structure %}Unknown structure{% else %}{% endif %}</td>
+        <td>{% if row.known_structure %}{{ row.known_structure.standing }}{% elif row.is_structure %}UNKNOWN{% endif %}</td>
+        <td>
+          {% if row.known_structure %}
+            {% if row.known_structure.owner_alliance_id %}A: {{ row.known_structure.owner_alliance_id }}{% endif %}
+            {% if row.known_structure.owner_corporation_id %}C: {{ row.known_structure.owner_corporation_id }}{% endif %}
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7">No parsed D-scan rows.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+

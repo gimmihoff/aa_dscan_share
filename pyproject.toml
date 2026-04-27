@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aa-dscan-share"
+version = "0.1.0"
+description = "AllianceAuth child plugin for submitting and sharing D-scans through AA Core Hub"
+requires-python = ">=3.10"
+dependencies = ["aa-core-hub>=1.3.6"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["aa_dscan_share*"]
+
+[tool.setuptools.package-data]
+aa_dscan_share = [
+    "templates/**/*.html",
+    "static/**/*",
+]
