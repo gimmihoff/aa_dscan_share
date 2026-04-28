@@ -9,6 +9,8 @@ AllianceAuth child plugin for submitting, viewing, and sharing D-scans through A
 - Redirect immediately to a shareable result page using `DScan.public_id`
 - Display parsed scan rows with known Core structure standing badges
 - Optionally save detected structures into Core as hostile, neutral, or friendly
+- Show fleet composition summaries for each shared scan
+- Show historic system D-scan timelines from Core data
 
 ## Requirements
 
@@ -34,4 +36,3 @@ This plugin intentionally stores all shared data in Core:
 - `create_dscan`
 - `get_dscan_by_public_id`
 - `create_or_update_structure`
-

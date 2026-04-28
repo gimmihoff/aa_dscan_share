@@ -11,8 +11,18 @@
     <div class="col-md-3"><strong>System</strong><br>{{ dscan.solar_system_name }} {{ dscan.solar_system_id }}</div>
     <div class="col-md-3"><strong>Source</strong><br>{{ dscan.source }}</div>
     <div class="col-md-3"><strong>Scanned</strong><br>{{ dscan.scanned_at }}</div>
-    <div class="col-md-3"><strong>Submitted</strong><br>{{ dscan.created_at }}</div>
+    <div class="col-md-3"><strong>Submitted</strong><br>{{ dscan.created_at }}<br><a href="{% url 'aa_dscan_share:system_timeline' dscan.solar_system_id %}">System timeline</a></div>
   </div>
+  <h4>Fleet Composition</h4>
+  <table class="table table-sm table-striped">
+    <thead><tr><th>Type</th><th>Count</th><th>Names</th></tr></thead>
+    <tbody>
+      {% for row in fleet_composition %}
+      <tr><td>{{ row.type_name }}</td><td>{{ row.count }}</td><td>{{ row.names|join:", " }}</td></tr>
+      {% empty %}<tr><td colspan="3">No fleet composition detected.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  <h4>Scan Rows</h4>
   <table class="table table-sm table-striped">
     <thead>
       <tr><th>Name</th><th>Type</th><th>Distance</th><th>Category</th><th>Core Match</th><th>Standing</th><th>Owner</th></tr>
@@ -40,4 +50,3 @@
   </table>
 </div>
 {% endblock %}
-

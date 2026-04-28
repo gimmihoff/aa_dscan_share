@@ -43,9 +43,39 @@ class DScanShareServiceTests(TestCase):
             solar_system_name="Jita",
         )
 
-        saved = save_detected_structures(dscan=dscan, standing="HOSTILE")
+        saved = save_detected_structures(
+            dscan=dscan,
+            structures=[
+                {
+                    "name": "Astrahus",
+                    "type_name": "Upwell Structure",
+                    "standing": "HOSTILE",
+                }
+            ],
+        )
 
         self.assertEqual(len(saved), 1)
         self.assertEqual(saved[0].standing, "HOSTILE")
         self.assertEqual(saved[0].solar_system_id, 30000142)
 
+    def test_fleet_composition_groups_non_structure_items(self):
+        from aa_core_hub.api import create_dscan
+        from aa_dscan_share.services import get_fleet_composition
+
+        dscan = create_dscan(
+            raw_text=(
+                "Pilot One\tCaracal\t1 AU\n"
+                "Pilot Two\tCaracal\t1 AU\n"
+                "Pilot Three\tScythe\t1 AU\n"
+                "Astrahus\tUpwell Structure\t1,000 km"
+            ),
+            solar_system_id=30000142,
+            solar_system_name="Jita",
+        )
+
+        composition = get_fleet_composition(dscan)
+
+        self.assertEqual(composition[0]["type_name"], "Caracal")
+        self.assertEqual(composition[0]["count"], 2)
+        self.assertEqual(composition[1]["type_name"], "Scythe")
+        self.assertEqual(composition[1]["count"], 1)

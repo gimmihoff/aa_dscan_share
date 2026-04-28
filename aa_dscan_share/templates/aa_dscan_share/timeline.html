@@ -1,0 +1,33 @@
+{% extends "allianceauth/base.html" %}
+{% block page_title %}D-Scan Timeline{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <h3>D-Scan Timeline</h3>
+  <div class="mb-3">
+    <strong>System</strong><br>{{ system_name }} {{ solar_system_id }}
+  </div>
+  <table class="table table-sm table-striped">
+    <thead><tr><th>Scanned</th><th>Submitted</th><th>Share</th><th>Ships</th><th>Types</th><th>Composition</th></tr></thead>
+    <tbody>
+      {% for row in timeline %}
+      <tr>
+        <td>{{ row.dscan.scanned_at }}</td>
+        <td>{{ row.dscan.created_at }}</td>
+        <td><a href="{% url 'aa_dscan_share:view' row.dscan.public_id %}">{{ row.dscan.public_id }}</a></td>
+        <td>{{ row.ship_count }}</td>
+        <td>{{ row.type_count }}</td>
+        <td>
+          {% for comp in row.composition %}
+            {{ comp.type_name }} x{{ comp.count }}{% if not forloop.last %}, {% endif %}
+          {% empty %}
+            No fleet composition
+          {% endfor %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6">No D-scans found for this system.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
