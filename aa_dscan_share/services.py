@@ -1,5 +1,6 @@
 from aa_core_hub.api import (
     DScanItem,
+    EveSolarSystem,
     Structure,
     create_or_update_structure,
     get_dscan_timeline_for_system,
@@ -15,6 +16,43 @@ STRUCTURE_CATEGORIES = {
     "MOON_DRILL",
     "MERCENARY_DEN",
 }
+
+
+def get_recent_systems_for_user(*, user_id: int, limit: int = 10):
+    seen = set()
+    systems = []
+    dscans = (
+        get_dscan_recent_for_user(user_id=user_id)
+        if user_id
+        else []
+    )
+    for dscan in dscans:
+        if not dscan.solar_system_id or dscan.solar_system_id in seen:
+            continue
+        seen.add(dscan.solar_system_id)
+        systems.append(
+            {
+                "solar_system_id": dscan.solar_system_id,
+                "solar_system_name": dscan.solar_system_name,
+            }
+        )
+        if len(systems) >= limit:
+            break
+    return systems
+
+
+def get_dscan_recent_for_user(*, user_id: int, limit: int = 100):
+    from aa_core_hub.api import DScan
+
+    return DScan.objects.filter(created_by_user_id=user_id).order_by("-created_at")[:limit]
+
+
+def get_system_suggestions(*, query: str = "", limit: int = 25):
+    qs = EveSolarSystem.objects.all().order_by("name")
+    query = (query or "").strip()
+    if query:
+        qs = qs.filter(name__icontains=query)
+    return qs[:limit]
 
 
 def is_structure_item(item: DScanItem) -> bool:
