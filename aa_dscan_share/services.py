@@ -39,6 +39,7 @@ STRUCTURE_TYPE_TERMS = (
     "tatara",
     "territorial claim unit",
     "tcu",
+    "stargate",
     "upwell structure",
 )
 

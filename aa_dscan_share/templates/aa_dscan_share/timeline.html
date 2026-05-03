@@ -5,6 +5,9 @@
   <h3>D-Scan Timeline</h3>
   <div class="mb-3">
     <strong>System</strong><br>{{ system_name }} {{ solar_system_id }}
+    <div class="mt-2">
+      <a class="btn btn-sm btn-outline-secondary" href="{% url 'aa_dscan_share:structure_data' solar_system_id %}">Structure Data</a>
+    </div>
   </div>
   <table class="table table-sm table-striped">
     <thead><tr><th>Scanned</th><th>Submitted</th><th>Share</th><th>Ships</th><th>Types</th><th>Composition</th></tr></thead>

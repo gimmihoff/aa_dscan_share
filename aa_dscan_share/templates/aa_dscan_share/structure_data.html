@@ -1,0 +1,83 @@
+{% extends "allianceauth/base.html" %}
+{% block page_title %}Structure Data{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <h3>Structure Data</h3>
+  <div class="mb-3">
+    <strong>System</strong><br>{{ system_name }} {{ solar_system_id }}
+    <div class="mt-2">
+      <a class="btn btn-sm btn-outline-secondary" href="{% url 'aa_dscan_share:system_timeline' solar_system_id %}">D-Scan timeline</a>
+    </div>
+  </div>
+
+  {% for row in structure_rows %}
+  <form method="post" class="mb-4">
+    {% csrf_token %}
+    <input type="hidden" name="structure_pk" value="{{ row.structure.pk }}">
+    <h4>{{ row.structure.name }}</h4>
+    <div class="table-responsive">
+      <table class="table table-sm table-striped align-middle">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Standing</th>
+            <th>State</th>
+            <th>Vulnerable</th>
+            <th>Fit</th>
+            <th>Owner</th>
+            <th>Next Timer</th>
+            <th>Save</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              {{ row.structure.type_name|default:"Unknown" }}<br>
+              <span class="text-muted">{{ row.structure.structure_category }}</span>
+            </td>
+            <td>{{ row.form.standing }}{{ row.form.standing.errors }}</td>
+            <td>{{ row.form.status }}{{ row.form.status.errors }}</td>
+            <td>{{ row.form.reinforce_hour }}{{ row.form.reinforce_hour.errors }}</td>
+            <td>{{ row.form.fit_status }}{{ row.form.fit_status.errors }}</td>
+            <td>
+              <div class="mb-1">A {{ row.form.owner_alliance_id }}</div>
+              <div>C {{ row.form.owner_corporation_id }}</div>
+            </td>
+            <td>
+              {% if row.next_timer %}
+                {{ row.next_timer.phase }}<br>{{ row.next_timer.occurs_at }}
+              {% else %}
+                No timer
+              {% endif %}
+            </td>
+            <td><button class="btn btn-sm btn-primary" type="submit">Save</button></td>
+          </tr>
+          <tr>
+            <th colspan="4">Structure Fit</th>
+            <th colspan="4">Notes</th>
+          </tr>
+          <tr>
+            <td colspan="4">{{ row.form.fit_notes }}{{ row.form.fit_notes.errors }}</td>
+            <td colspan="4">{{ row.form.notes }}{{ row.form.notes.errors }}</td>
+          </tr>
+          <tr>
+            <th>Timer Phase</th>
+            <th colspan="2">Timer Time</th>
+            <th>Confirmed</th>
+            <th colspan="4">Timer Notes</th>
+          </tr>
+          <tr>
+            <td>{{ row.form.timer_phase }}{{ row.form.timer_phase.errors }}</td>
+            <td colspan="2">{{ row.form.timer_occurs_at }}{{ row.form.timer_occurs_at.errors }}</td>
+            <td>{{ row.form.timer_confirmed }}</td>
+            <td colspan="4">{{ row.form.timer_notes }}{{ row.form.timer_notes.errors }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </form>
+  {% empty %}
+  <p>No structures are saved in Core for this system yet.</p>
+  {% endfor %}
+</div>
+{% endblock %}

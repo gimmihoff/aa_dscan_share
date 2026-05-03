@@ -1,12 +1,18 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from aa_core_hub.api import create_dscan, get_dscan_by_public_id
+from aa_core_hub.api import (
+    EveSolarSystem,
+    Structure,
+    StructureTimer,
+    create_dscan,
+    get_dscan_by_public_id,
+)
 
-from .forms import DetectedStructureForm, DScanSubmitForm
+from .forms import DetectedStructureForm, DScanSubmitForm, StructureDataForm
 from .services import (
     annotate_dscan_items,
     get_detected_structure_rows,
@@ -130,6 +136,77 @@ def system_timeline(request, solar_system_id):
             "solar_system_id": solar_system_id,
             "system_name": system_name,
             "timeline": timeline,
+        },
+    )
+
+
+@login_required
+@permission_required("aa_core_hub.change_structure", raise_exception=True)
+def structure_data(request, solar_system_id):
+    structure_qs = Structure.objects.filter(solar_system_id=solar_system_id).order_by(
+        "standing",
+        "type_name",
+        "name",
+    )
+    system = EveSolarSystem.objects.filter(solar_system_id=solar_system_id).first()
+    system_name = (
+        system.name
+        if system
+        else structure_qs.first().solar_system_name
+        if structure_qs.exists()
+        else ""
+    )
+
+    if request.method == "POST":
+        structure = get_object_or_404(
+            Structure,
+            pk=request.POST.get("structure_pk"),
+            solar_system_id=solar_system_id,
+        )
+        form = StructureDataForm(
+            request.POST,
+            instance=structure,
+            prefix=f"structure-{structure.pk}",
+        )
+        if form.is_valid():
+            structure = form.save()
+            if form.cleaned_data.get("timer_occurs_at"):
+                StructureTimer.objects.create(
+                    structure=structure,
+                    phase=form.cleaned_data.get("timer_phase") or "OTHER",
+                    occurs_at=form.cleaned_data["timer_occurs_at"],
+                    is_confirmed=form.cleaned_data.get("timer_confirmed") or False,
+                    notes=form.cleaned_data.get("timer_notes") or "",
+                )
+                if structure.status not in ("DESTROYED", "REMOVED"):
+                    structure.status = "REINFORCED"
+                    structure.save(update_fields=["status", "updated_at"])
+            messages.success(request, f"Updated structure data for {structure.name}.")
+            return redirect("aa_dscan_share:structure_data", solar_system_id=solar_system_id)
+        messages.error(request, "Structure data could not be saved. Check the highlighted fields.")
+    else:
+        form = None
+
+    structures = list(structure_qs.prefetch_related("timers"))
+    structure_rows = []
+    for structure in structures:
+        structure_rows.append(
+            {
+                "structure": structure,
+                "form": form
+                if form is not None and form.instance.pk == structure.pk
+                else StructureDataForm(instance=structure, prefix=f"structure-{structure.pk}"),
+                "next_timer": structure.timers.order_by("occurs_at").first(),
+            }
+        )
+
+    return render(
+        request,
+        "aa_dscan_share/structure_data.html",
+        {
+            "solar_system_id": solar_system_id,
+            "system_name": system_name,
+            "structure_rows": structure_rows,
         },
     )
 
