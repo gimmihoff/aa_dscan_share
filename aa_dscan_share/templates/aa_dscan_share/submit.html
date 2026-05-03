@@ -14,8 +14,26 @@
         </div>
       </div>
       <div class="col-md-4">
-        <div class="mb-3">{{ form.solar_system_id.label_tag }} {{ form.solar_system_id }} {{ form.solar_system_id.errors }}</div>
-        <div class="mb-3">{{ form.solar_system_name.label_tag }} {{ form.solar_system_name }} {{ form.solar_system_name.errors }}</div>
+        <div class="mb-3">
+          {{ form.system.label_tag }}
+          <input class="form-control" list="system-options" name="{{ form.system.html_name }}" id="{{ form.system.id_for_label }}" value="{{ form.system.value|default_if_none:'' }}">
+          {{ form.solar_system_id }}
+          {{ form.system.errors }}
+          {{ form.non_field_errors }}
+          <datalist id="system-options">
+            {% for system in system_suggestions %}
+            <option data-system-id="{{ system.solar_system_id }}" value="{{ system.name }}"></option>
+            {% endfor %}
+          </datalist>
+        </div>
+        {% if recent_systems %}
+        <div class="mb-3">
+          <div class="small text-muted mb-1">Recent systems</div>
+          {% for system in recent_systems %}
+          <button class="btn btn-sm btn-outline-secondary mb-1" type="button" data-system-name="{{ system.solar_system_name }}" data-system-id="{{ system.solar_system_id }}">{{ system.solar_system_name }}</button>
+          {% endfor %}
+        </div>
+        {% endif %}
         <button class="btn btn-outline-primary" name="action" value="preview" type="submit">Preview Structures</button>
         <button class="btn btn-primary" name="action" value="submit" type="submit">Submit and Share</button>
       </div>
@@ -45,4 +63,56 @@
     {% endif %}
   </form>
 </div>
+<script>
+  (function () {
+    var systemInput = document.getElementById("{{ form.system.id_for_label }}");
+    var systemIdInput = document.getElementById("{{ form.solar_system_id.id_for_label }}");
+    var systemOptions = document.getElementById("system-options");
+    var searchUrl = "{% url 'aa_dscan_share:system_search' %}";
+    var searchTimer = null;
+
+    function setSystemOptions(results) {
+      systemOptions.innerHTML = "";
+      results.forEach(function (system) {
+        var option = document.createElement("option");
+        option.value = system.name;
+        option.setAttribute("data-system-id", system.solar_system_id);
+        systemOptions.appendChild(option);
+      });
+    }
+
+    function matchSelectedOption() {
+      systemIdInput.value = "";
+      document.querySelectorAll("#system-options option").forEach(function (option) {
+        if (option.value.toLowerCase() === systemInput.value.toLowerCase()) {
+          systemIdInput.value = option.getAttribute("data-system-id") || "";
+        }
+      });
+    }
+
+    document.querySelectorAll("[data-system-name][data-system-id]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        systemInput.value = button.getAttribute("data-system-name");
+        systemIdInput.value = button.getAttribute("data-system-id");
+      });
+    });
+    systemInput.addEventListener("input", function () {
+      matchSelectedOption();
+      window.clearTimeout(searchTimer);
+      searchTimer = window.setTimeout(function () {
+        if (systemInput.value.length < 2) {
+          return;
+        }
+        fetch(searchUrl + "?q=" + encodeURIComponent(systemInput.value), {
+          credentials: "same-origin"
+        })
+          .then(function (response) { return response.json(); })
+          .then(function (data) {
+            setSystemOptions(data.results || []);
+            matchSelectedOption();
+          });
+      }, 200);
+    });
+  })();
+</script>
 {% endblock %}

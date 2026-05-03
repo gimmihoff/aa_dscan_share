@@ -5,6 +5,8 @@ AllianceAuth child plugin for submitting, viewing, and sharing D-scans through A
 ## Features
 
 - Paste a D-scan and link it to an EVE solar system
+- Select systems by name from Core's geography cache
+- Reuse the last 10 systems submitted by the current user
 - Store scans through `aa_core_hub.api.create_dscan`
 - Redirect immediately to a shareable result page using `DScan.public_id`
 - Display parsed scan rows with known Core structure standing badges

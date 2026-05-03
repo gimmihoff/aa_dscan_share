@@ -1,4 +1,7 @@
 from django import forms
+from django.core.exceptions import ValidationError
+
+from aa_core_hub.api import EveSolarSystem
 
 
 STANDING_CHOICES = (
@@ -9,9 +12,29 @@ STANDING_CHOICES = (
 
 
 class DScanSubmitForm(forms.Form):
-    solar_system_id = forms.IntegerField(label="System ID", min_value=1)
-    solar_system_name = forms.CharField(label="System name", max_length=128, required=False)
+    system = forms.CharField(label="System", max_length=128)
+    solar_system_id = forms.IntegerField(widget=forms.HiddenInput, required=False, min_value=1)
     raw_text = forms.CharField(label="D-scan", widget=forms.Textarea(attrs={"rows": 14}))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        system = (cleaned_data.get("system") or "").strip()
+        solar_system_id = cleaned_data.get("solar_system_id")
+
+        eve_system = None
+        if solar_system_id:
+            eve_system = EveSolarSystem.objects.filter(solar_system_id=solar_system_id).first()
+        if not eve_system and system:
+            eve_system = EveSolarSystem.objects.filter(name__iexact=system).first()
+        if not eve_system and system.isdigit():
+            eve_system = EveSolarSystem.objects.filter(solar_system_id=int(system)).first()
+        if not eve_system:
+            raise ValidationError("Select a system from Core's geography cache before submitting.")
+
+        cleaned_data["solar_system_id"] = eve_system.solar_system_id
+        cleaned_data["solar_system_name"] = eve_system.name
+        cleaned_data["system"] = eve_system.name
+        return cleaned_data
 
 
 class DetectedStructureForm(forms.Form):

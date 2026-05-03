@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
@@ -10,6 +11,8 @@ from .services import (
     annotate_dscan_items,
     get_detected_structure_rows,
     get_fleet_composition,
+    get_recent_systems_for_user,
+    get_system_suggestions,
     get_system_timeline,
     save_detected_structures,
 )
@@ -21,6 +24,8 @@ def submit_dscan(request):
     detected_rows = []
     structure_forms = []
     structure_form_rows = []
+    recent_systems = get_recent_systems_for_user(user_id=request.user.id)
+    system_suggestions = get_system_suggestions()
     if request.method == "POST":
         form = DScanSubmitForm(request.POST)
         if form.is_valid():
@@ -87,6 +92,8 @@ def submit_dscan(request):
             "detected_rows": detected_rows,
             "structure_forms": structure_forms,
             "structure_form_rows": structure_form_rows,
+            "recent_systems": recent_systems,
+            "system_suggestions": system_suggestions,
         },
     )
 
@@ -122,4 +129,22 @@ def system_timeline(request, solar_system_id):
             "system_name": system_name,
             "timeline": timeline,
         },
+    )
+
+
+@login_required
+@permission_required("aa_core_hub.view_dscan", raise_exception=True)
+def system_search(request):
+    query = request.GET.get("q", "")
+    systems = get_system_suggestions(query=query, limit=20)
+    return JsonResponse(
+        {
+            "results": [
+                {
+                    "solar_system_id": system.solar_system_id,
+                    "name": system.name,
+                }
+                for system in systems
+            ]
+        }
     )
