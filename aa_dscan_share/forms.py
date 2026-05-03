@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 
-from aa_core_hub.api import EveSolarSystem
+from aa_core_hub.api import EveSolarSystem, Structure, StructureTimer
 
 
 STANDING_CHOICES = (
@@ -47,3 +47,39 @@ class DetectedStructureForm(forms.Form):
     owner_alliance_id = forms.IntegerField(required=False, min_value=1)
     owner_corporation_id = forms.IntegerField(required=False, min_value=1)
     notes = forms.CharField(required=False, widget=forms.TextInput)
+
+
+class StructureDataForm(forms.ModelForm):
+    timer_phase = forms.ChoiceField(
+        choices=StructureTimer._meta.get_field("phase").choices,
+        required=False,
+        initial="OTHER",
+    )
+    timer_occurs_at = forms.DateTimeField(
+        required=False,
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}),
+        input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M"],
+    )
+    timer_confirmed = forms.BooleanField(required=False)
+    timer_notes = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={"placeholder": "Timer notes"}),
+    )
+
+    class Meta:
+        model = Structure
+        fields = (
+            "standing",
+            "status",
+            "fit_status",
+            "reinforce_hour",
+            "owner_alliance_id",
+            "owner_corporation_id",
+            "fit_notes",
+            "notes",
+        )
+        widgets = {
+            "reinforce_hour": forms.TimeInput(attrs={"type": "time"}),
+            "fit_notes": forms.Textarea(attrs={"rows": 3}),
+            "notes": forms.Textarea(attrs={"rows": 2}),
+        }

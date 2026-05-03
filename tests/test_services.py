@@ -88,7 +88,8 @@ class DScanShareServiceTests(TestCase):
             raw_text=(
                 "Pilot One\tCaracal\t1 AU\n"
                 "1035466617946\tUpwell Structure\t1,000 km\n"
-                "Jita IV - Moon 4\tCustoms Office\t2 AU"
+                "Jita IV - Moon 4\tCustoms Office\t2 AU\n"
+                "Jita\tStargate\t5 AU"
             ),
             solar_system_id=30000142,
             solar_system_name="Jita",
@@ -99,4 +100,4 @@ class DScanShareServiceTests(TestCase):
 
         self.assertEqual(len(composition), 1)
         self.assertEqual(composition[0]["type_name"], "Caracal")
-        self.assertEqual(len(structures), 2)
+        self.assertEqual(len(structures), 3)

@@ -11,7 +11,7 @@
     <div class="col-md-3"><strong>System</strong><br>{{ dscan.solar_system_name }} {{ dscan.solar_system_id }}</div>
     <div class="col-md-3"><strong>Source</strong><br>{{ dscan.source }}</div>
     <div class="col-md-3"><strong>Scanned</strong><br>{{ dscan.scanned_at }}</div>
-    <div class="col-md-3"><strong>Submitted</strong><br>{{ dscan.created_at }}<br><a href="{% url 'aa_dscan_share:system_timeline' dscan.solar_system_id %}">System timeline</a></div>
+    <div class="col-md-3"><strong>Submitted</strong><br>{{ dscan.created_at }}<br><a href="{% url 'aa_dscan_share:system_timeline' dscan.solar_system_id %}">System timeline</a><br><a href="{% url 'aa_dscan_share:structure_data' dscan.solar_system_id %}">Structure Data</a></div>
   </div>
   <h4>Fleet Composition</h4>
   <table class="table table-sm table-striped">
