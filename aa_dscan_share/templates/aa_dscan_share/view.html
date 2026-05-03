@@ -15,17 +15,42 @@
   </div>
   <h4>Fleet Composition</h4>
   <table class="table table-sm table-striped">
-    <thead><tr><th>Type</th><th>Count</th><th>Names</th></tr></thead>
+    <thead><tr><th>Ship Type</th><th>Count</th><th>Pilot/Object Names</th></tr></thead>
     <tbody>
       {% for row in fleet_composition %}
       <tr><td>{{ row.type_name }}</td><td>{{ row.count }}</td><td>{{ row.names|join:", " }}</td></tr>
       {% empty %}<tr><td colspan="3">No fleet composition detected.</td></tr>{% endfor %}
     </tbody>
   </table>
-  <h4>Scan Rows</h4>
+  <h4>Structures</h4>
   <table class="table table-sm table-striped">
     <thead>
-      <tr><th>Name</th><th>Type</th><th>Distance</th><th>Category</th><th>Core Match</th><th>Standing</th><th>Owner</th></tr>
+      <tr><th>Structure Name / ID</th><th>Structure Type</th><th>Distance</th><th>Core Match</th><th>Standing</th><th>Owner</th></tr>
+    </thead>
+    <tbody>
+      {% for row in structure_rows %}
+      <tr>
+        <td>{{ row.item.name }}</td>
+        <td>{{ row.item.type_name }}</td>
+        <td>{{ row.item.distance }}</td>
+        <td>{% if row.known_structure %}{{ row.known_structure.name }}{% else %}Unknown structure{% endif %}</td>
+        <td>{% if row.known_structure %}{{ row.known_structure.standing }}{% else %}UNKNOWN{% endif %}</td>
+        <td>
+          {% if row.known_structure %}
+            {% if row.known_structure.owner_alliance_id %}A: {{ row.known_structure.owner_alliance_id }}{% endif %}
+            {% if row.known_structure.owner_corporation_id %}C: {{ row.known_structure.owner_corporation_id }}{% endif %}
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6">No structures detected.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <h4>All Scan Rows</h4>
+  <table class="table table-sm table-striped">
+    <thead>
+      <tr><th>D-Scan Name / ID</th><th>Type</th><th>Distance</th><th>Category</th><th>Core Match</th><th>Standing</th><th>Owner</th></tr>
     </thead>
     <tbody>
       {% for row in rows %}

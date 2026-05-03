@@ -12,6 +12,7 @@ from .services import (
     get_detected_structure_rows,
     get_fleet_composition,
     get_recent_systems_for_user,
+    get_structure_rows,
     get_system_suggestions,
     get_system_timeline,
     save_detected_structures,
@@ -112,6 +113,7 @@ def view_dscan(request, public_id):
             "fleet_composition": get_fleet_composition(dscan),
             "rows": annotate_dscan_items(dscan),
             "share_url": share_url,
+            "structure_rows": get_structure_rows(dscan),
         },
     )
 

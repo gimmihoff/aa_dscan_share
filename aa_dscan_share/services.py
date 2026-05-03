@@ -17,6 +17,31 @@ STRUCTURE_CATEGORIES = {
     "MERCENARY_DEN",
 }
 
+NON_FLEET_CATEGORIES = {"PROBE", "DEPLOYABLE"}
+
+STRUCTURE_TYPE_TERMS = (
+    "ansiblex",
+    "athanor",
+    "azbel",
+    "cyno beacon",
+    "cyno jammer",
+    "customs office",
+    "fortizar",
+    "infrastructure hub",
+    "ihub",
+    "keepstar",
+    "mercenary den",
+    "metenox",
+    "moon drill",
+    "orbital skyhook",
+    "raitaru",
+    "sotiyo",
+    "tatara",
+    "territorial claim unit",
+    "tcu",
+    "upwell structure",
+)
+
 
 def get_recent_systems_for_user(*, user_id: int, limit: int = 10):
     seen = set()
@@ -55,8 +80,13 @@ def get_system_suggestions(*, query: str = "", limit: int = 25):
     return qs[:limit]
 
 
+def is_structure_type(type_name: str) -> bool:
+    normalized = (type_name or "").lower()
+    return any(term in normalized for term in STRUCTURE_TYPE_TERMS)
+
+
 def is_structure_item(item: DScanItem) -> bool:
-    return item.category in STRUCTURE_CATEGORIES
+    return item.category in STRUCTURE_CATEGORIES or is_structure_type(item.type_name)
 
 
 def find_known_structure(*, item: DScanItem, solar_system_id: int):
@@ -89,8 +119,12 @@ def annotate_dscan_items(dscan):
     return rows
 
 
+def get_structure_rows(dscan):
+    return [row for row in annotate_dscan_items(dscan) if row["is_structure"]]
+
+
 def is_fleet_item(item: DScanItem) -> bool:
-    return not is_structure_item(item) and item.category not in {"PROBE", "DEPLOYABLE"}
+    return not is_structure_item(item) and item.category not in NON_FLEET_CATEGORIES
 
 
 def get_fleet_composition(dscan):
@@ -132,7 +166,9 @@ def get_system_timeline(*, solar_system_id: int, limit: int = 50):
 def get_detected_structure_rows(*, raw_text: str, solar_system_id: int):
     rows = []
     for index, item in enumerate(parse_dscan(raw_text)):
-        if item.get("category") not in STRUCTURE_CATEGORIES:
+        if item.get("category") not in STRUCTURE_CATEGORIES and not is_structure_type(
+            item.get("type_name", "")
+        ):
             continue
         known_structure = find_known_structure_from_values(
             name=item["name"],

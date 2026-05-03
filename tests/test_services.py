@@ -79,3 +79,24 @@ class DScanShareServiceTests(TestCase):
         self.assertEqual(composition[0]["count"], 2)
         self.assertEqual(composition[1]["type_name"], "Scythe")
         self.assertEqual(composition[1]["count"], 1)
+
+    def test_structure_rows_separate_upwell_structures_from_fleet(self):
+        from aa_core_hub.api import create_dscan
+        from aa_dscan_share.services import get_fleet_composition, get_structure_rows
+
+        dscan = create_dscan(
+            raw_text=(
+                "Pilot One\tCaracal\t1 AU\n"
+                "1035466617946\tUpwell Structure\t1,000 km\n"
+                "Jita IV - Moon 4\tCustoms Office\t2 AU"
+            ),
+            solar_system_id=30000142,
+            solar_system_name="Jita",
+        )
+
+        composition = get_fleet_composition(dscan)
+        structures = get_structure_rows(dscan)
+
+        self.assertEqual(len(composition), 1)
+        self.assertEqual(composition[0]["type_name"], "Caracal")
+        self.assertEqual(len(structures), 2)
